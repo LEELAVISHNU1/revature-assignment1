@@ -1,0 +1,333 @@
+1.CREATE TABLES
+
+CREATE TABLE dept (
+    dept_id NUMBER PRIMARY KEY,
+    dept_name VARCHAR2(50),
+    location VARCHAR2(50)
+);
+
+CREATE TABLE emp (
+    emp_id NUMBER PRIMARY KEY,
+    emp_name VARCHAR2(50),
+    job_title VARCHAR2(50),
+    hire_date DATE,
+    salary NUMBER,
+    manager_id NUMBER,
+    dept_id NUMBER
+);
+
+CREATE TABLE project (
+    project_id NUMBER PRIMARY KEY,
+    project_name VARCHAR2(100),
+    start_date DATE,
+    end_date DATE,
+    dept_id NUMBER
+);
+
+CREATE TABLE emp_project (
+    emp_id NUMBER,
+    project_id NUMBER,
+    role_name VARCHAR2(50),
+    allocation_pct NUMBER,
+    assign_date DATE
+);
+
+CREATE TABLE sal_grade (
+    grade VARCHAR2(5),
+    min_sal NUMBER,
+    max_sal NUMBER
+);
+
+2.INSERT DATA
+
+INSERT INTO dept VALUES (10,'IT','Chennai');
+INSERT INTO dept VALUES (20,'HR','Bengaluru');
+INSERT INTO dept VALUES (30,'Finance','Mumbai');
+INSERT INTO dept VALUES (40,'Sales','Delhi');
+INSERT INTO dept VALUES (50,'Support','Hyderabad');
+INSERT INTO dept VALUES (60,'R&D','Pune');
+
+INSERT INTO emp VALUES (1001,'Arun Kumar','IT Manager','2021-06-09',90000,NULL,10);
+INSERT INTO emp VALUES (1002,'Divya Sharma','HR Executive','2022-01-10',52000,1006,20);
+INSERT INTO emp VALUES (1003,'Mubeen Ali','Senior Developer','2023-03-20',85000,1001,10);
+INSERT INTO emp VALUES (1004,'Ravi Iyer','Accountant','2020-07-18',60000,1007,30);
+INSERT INTO emp VALUES (1005,'Anita Verma','Sales Executive','2022-09-12',48000,1008,40);
+INSERT INTO emp VALUES (1006,'Kumar Singh','HR Manager','2020-11-05',78000,NULL,20);
+INSERT INTO emp VALUES (1007,'Meera Nair','Finance Manager','2019-04-22',82000,NULL,30);
+INSERT INTO emp VALUES (1008,'Sameer Khan','Sales Manager','2021-02-14',80000,NULL,40);
+INSERT INTO emp VALUES (1009,'Priya Das','Support Engineer','2024-01-05',45000,1001,50);
+INSERT INTO emp VALUES (1010,'John Contractor','Consultant','2024-06-01',70000,1001,NULL);
+
+
+INSERT INTO project VALUES (501,'Payroll Revamp','2025-01-15','2025-10-31',30);
+INSERT INTO project VALUES (502,'HR Portal','2025-02-01',NULL,20);
+INSERT INTO project VALUES (503,'CRM Upgrade','2025-03-10',NULL,40);
+INSERT INTO project VALUES (504,'Cloud Migration','2025-01-20',NULL,10);
+INSERT INTO project VALUES (505,'Support Ticket Automation','2025-04-05',NULL,50);
+INSERT INTO project VALUES (506,'AI Research POC','2025-05-01',NULL,60);
+INSERT INTO project VALUES (507,'Unassigned Initiative','2025-06-01',NULL,NULL);
+
+INSERT INTO emp_project VALUES (1001,504,'Project Lead',60,'2025-01-20');
+INSERT INTO emp_project VALUES (1003,504,'Developer',80,'2025-02-01');
+INSERT INTO emp_project VALUES (1006,502,'Project Lead',50,'2025-02-01');
+INSERT INTO emp_project VALUES (1002,502,'HR Analyst',70,'2025-02-10');
+INSERT INTO emp_project VALUES (1008,503,'Project Lead',40,'2025-03-10');
+INSERT INTO emp_project VALUES (1005,503,'Sales SME',60,'2025-03-15');
+INSERT INTO emp_project VALUES (1007,501,'Project Lead',50,'2025-01-15');
+INSERT INTO emp_project VALUES (1004,501,'Accountant SME',50,'2025-01-20');
+INSERT INTO emp_project VALUES (1009,505,'Support SME',70,'2025-04-05');
+
+INSERT INTO sal_grade VALUES ('G1',0,49999);
+INSERT INTO sal_grade VALUES ('G2',50000,69999);
+INSERT INTO sal_grade VALUES ('G3',70000,89999);
+INSERT INTO sal_grade VALUES ('G4',90000,120000);
+
+3.Queries and their Outputs:
+
+(i) List all employees with their department name and location.
+
+SQL> SELECT e.emp_name, d.dept_name, d.location
+  2  FROM emp e
+  3  JOIN dept d ON e.dept_id = d.dept_id;
+
+EMP_NAME                                           DEPT_NAME                     LOCATION
+-------------------------------------------------- -------------------------------------------------- --------------------------------------------------
+Arun Kumar                                         IT                            Chennai
+Divya Sharma                                       HR                            Bengaluru
+Mubeen Ali                                         IT                            Chennai
+Ravi Iyer                                          Finance                       Mumbai
+Anita Verma                                        Sales                         Delhi
+Kumar Singh                                        HR                            Bengaluru
+Meera Nair                                         Finance                       Mumbai
+Sameer Khan                                        Sales                         Delhi
+Priya Das                                          Support                       Hyderabad
+
+9 rows selected.
+
+(ii) List employees who are assigned to a project, showing employee name + project name + role.
+
+SQL> SELECT e.emp_name, p.project_name, ep.role_name
+  2  FROM emp e
+  3  JOIN emp_project ep ON e.emp_id = ep.emp_id
+  4  JOIN project p ON ep.project_id = p.project_id;
+
+EMP_NAME                                           PROJECT_NAME
+-------------------------------------------------- ----------------------------------------------------------------------------------------------------
+ROLE_NAME
+--------------------------------------------------
+Arun Kumar                                         Cloud Migration
+Project Lead
+
+Divya Sharma                                       HR Portal
+HR Analyst
+
+Mubeen Ali                                         Cloud Migration
+Developer
+
+Ravi Iyer                                          Payroll Revamp
+Accountant SME
+
+Anita Verma                                        CRM Upgrade
+Sales SME
+
+Kumar Singh                                        HR Portal
+Project Lead
+
+Meera Nair                                         Payroll Revamp
+Project Lead
+
+Sameer Khan                                        CRM Upgrade
+Project Lead
+
+Priya Das                                          Support Ticket Automation
+Support SME
+
+
+9 rows selected.
+
+(iii) Show all departments, and employee names if present (departments with no employees must appear).
+
+SQL> SELECT d.dept_name, e.emp_name
+  2  FROM dept d
+  3  LEFT JOIN emp e ON d.dept_id = e.dept_id;
+
+DEPT_NAME                                          EMP_NAME
+-------------------------------------------------- --------------------------------------------------
+IT                                                 Arun Kumar
+HR                                                 Divya Sharma
+IT                                                 Mubeen Ali
+Finance                                            Ravi Iyer
+Sales                                              Anita Verma
+HR                                                 Kumar Singh
+Finance                                            Meera Nair
+Sales                                              Sameer Khan
+Support                                            Priya Das
+Rk
+
+10 rows selected.
+
+(iv) Show all projects, and assigned employee names if present (projects with no employees must appear).
+
+SQL> SELECT p.project_name, e.emp_name
+  2  FROM project p
+  3  LEFT JOIN emp_project ep ON p.project_id = ep.project_id
+  4  LEFT JOIN emp e ON ep.emp_id = e.emp_id;
+
+PROJECT_NAME                                                                    EMP_NAME
+---------------------------------------------------------------------------------------------------- --------------------------------------------------
+Cloud Migration                                                                 Arun Kumar
+HR Portal                                                                       Divya Sharma
+Cloud Migration                                                                 Mubeen Ali
+Payroll Revamp                                                                  Ravi Iyer
+CRM Upgrade                                                                     Anita Verma
+HR Portal                                                                       Kumar Singh
+Payroll Revamp                                                                  Meera Nair
+CRM Upgrade                                                                     Sameer Khan
+Support Ticket Automation                                                       Priya Das
+Unassigned Initiative
+AI Research POC
+
+11 rows selected.
+
+(v). Show all employees, including those without a department (dept fields can be null).
+
+
+SQL> SELECT e.emp_name, d.dept_name
+  2  FROM dept d
+  3  RIGHT JOIN emp e ON d.dept_id = e.dept_id;
+
+EMP_NAME                                           DEPT_NAME
+-------------------------------------------------- --------------------------------------------------
+Arun Kumar                                         IT
+Mubeen Ali                                         IT
+Divya Sharma                                       HR
+Kumar Singh                                        HR
+Ravi Iyer                                          Finance
+Meera Nair                                         Finance
+Anita Verma                                        Sales
+Sameer Khan                                        Sales
+Priya Das                                          Support
+John Contractor
+
+(vi). Show all departments and all employees, even when there is no match (unmatched rows from both sides)
+
+SQL> SELECT e.emp_name, d.dept_name
+  2  FROM emp e
+  3  FULL OUTER JOIN dept d ON e.dept_id = d.dept_id;
+
+EMP_NAME                                           DEPT_NAME
+-------------------------------------------------- --------------------------------------------------
+Arun Kumar                                         IT
+Divya Sharma                                       HR
+Mubeen Ali                                         IT
+Ravi Iyer                                          Finance
+Anita Verma                                        Sales
+Kumar Singh                                        HR
+Meera Nair                                         Finance
+Sameer Khan                                        Sales
+Priya Das                                          Support
+John Contractor
+                                                   Rk
+
+11 rows selected.
+
+(vii). Create a “planning matrix”: every department combined with every salary grade.
+
+
+SQL> SELECT d.dept_name, s.grade
+  2  FROM dept d
+  3  CROSS JOIN sal_grade s;
+
+DEPT_NAME                                          GRADE
+-------------------------------------------------- -----
+IT                                                 G1
+HR                                                 G1
+Finance                                            G1
+Sales                                              G1
+Support                                            G1
+Rk                                                 G1
+IT                                                 G2
+HR                                                 G2
+Finance                                            G2
+Sales                                              G2
+Support                                            G2
+Rk                                                 G2
+IT                                                 G3
+HR                                                 G3
+Finance                                            G3
+Sales                                              G3
+Support                                            G3
+Rk                                                 G3
+IT                                                 G4
+HR                                                 G4
+Finance                                            G4
+Sales                                              G4
+Support                                            G4
+Rk                                                 G4
+
+24 rows selected.
+
+(viii). Show employee name and their manager name (employees without manager should still show).
+ 
+SQL> SELECT e.emp_name AS employee,
+  2         m.emp_name AS manager
+  3  FROM emp e
+  4  LEFT JOIN emp m ON e.manager_id = m.emp_id;
+
+EMPLOYEE                                           MANAGER
+-------------------------------------------------- --------------------------------------------------
+Mubeen Ali                                         Arun Kumar
+Priya Das                                          Arun Kumar
+John Contractor                                    Arun Kumar
+Divya Sharma                                       Kumar Singh
+Ravi Iyer                                          Meera Nair
+Anita Verma                                        Sameer Khan
+Arun Kumar
+Kumar Singh
+Meera Nair
+Sameer Khan
+
+10 rows selected.
+
+(ix). Join emp and dept using dept_id with USING (dept_id) and display columns cleanly.
+
+ SQL> SELECT emp_name, dept_name, location
+  2  FROM emp
+  3  JOIN dept USING (dept_id);
+
+EMP_NAME                                           DEPT_NAME                     LOCATION
+-------------------------------------------------- -------------------------------------------------- --------------------------------------------------
+Arun Kumar                                         IT                            Chennai
+Divya Sharma                                       HR                            Bengaluru
+Mubeen Ali                                         IT                            Chennai
+Ravi Iyer                                          Finance                       Mumbai
+Anita Verma                                        Sales                         Delhi
+Kumar Singh                                        HR                            Bengaluru
+Meera Nair                                         Finance                       Mumbai
+Sameer Khan                                        Sales                         Delhi
+Priya Das                                          Support                       Hyderabad
+
+9 rows selected.
+
+(x). Assign a grade to each employee based on salary using sal_grade (salary between min_sal and max_sal).
+
+
+SQL> SELECT e.emp_name, e.salary, s.grade
+  2  FROM emp e
+  3  JOIN sal_grade s
+  4  ON e.salary BETWEEN s.min_sal AND s.max_sal;
+
+EMP_NAME                                               SALARY GRADE
+-------------------------------------------------- ---------- -----
+Anita Verma                                             48000 G1
+Priya Das                                               45000 G1
+Divya Sharma                                            52000 G2
+Ravi Iyer                                               60000 G2
+Mubeen Ali                                              85000 G3
+Kumar Singh                                             78000 G3
+Meera Nair                                              82000 G3
+Sameer Khan                                             80000 G3
+John Contractor                                         70000 G3
+Arun Kumar                                              90000 G4
+
+10 rows selected.
